@@ -11,7 +11,7 @@ class Pokemon(models.Model):
                                            verbose_name='Из кого эволюционировал',
                                            null=True,
                                            blank=True,
-                                           related_name='next_evolution',
+                                           related_name='next_evolutions',
                                            on_delete=models.SET_NULL
                                            )
 

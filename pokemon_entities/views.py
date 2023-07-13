@@ -1,6 +1,6 @@
 import folium
 from django.http import HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from pokemon_entities.models import Pokemon, PokemonEntity
 from django.utils.timezone import localtime
 
@@ -28,9 +28,10 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
 
-    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=localtime(), disappeared_at__gte=localtime())
-
+    local_time = localtime()
+    pokemon_entities = PokemonEntity.objects.filter(appeared_at__lte=local_time, disappeared_at__gte=local_time)
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
+
     for pokemon_entity in pokemon_entities:
         add_pokemon(
             folium_map, pokemon_entity.lat,
@@ -55,11 +56,11 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-   
-    pokemon = Pokemon.objects.get(id=pokemon_id)
-    pokemon_entities = PokemonEntity.objects.filter(pokemon=pokemon, appeared_at__lte=localtime(), disappeared_at__gte=localtime())
-    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
 
+    local_time = localtime()
+    folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
+    pokemon = get_object_or_404(Pokemon, id=pokemon_id)
+    pokemon_entities = PokemonEntity.objects.filter(pokemon=pokemon, appeared_at__lte=local_time, disappeared_at__gte=local_time)
     for pokemon_entity in pokemon_entities:
         add_pokemon(
             folium_map, pokemon_entity.lat,
@@ -75,6 +76,8 @@ def show_pokemon(request, pokemon_id):
         'description': pokemon.description,
     }
 
+
+
     if pokemon.previous_evolution is not None:
         chosen_pokemon['previous_evolution'] = {
                                             "pokemon_id": pokemon.previous_evolution.id,
@@ -82,7 +85,7 @@ def show_pokemon(request, pokemon_id):
                                             "img_url": request.build_absolute_uri(pokemon.previous_evolution.image.url),
                                             }
   
-    next_evolution = pokemon.next_evolution.all().first()
+    next_evolution = pokemon.next_evolutions.first()
     if next_evolution is not None:
         chosen_pokemon['next_evolution'] = {
                                             "pokemon_id": next_evolution.id,
