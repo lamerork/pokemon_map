@@ -5,15 +5,14 @@ from django.db import models  # noqa F401
 
 class Pokemon(models.Model):
     title = models.CharField(max_length=200, verbose_name='Имя покемона')
-    image = models.ImageField(blank=True, null=True, verbose_name='Картинка')
-    
+    image = models.ImageField(blank=True, null=True, verbose_name='Картинка', upload_to='images')
 
     def __str__(self):
         return self.title
 
 
 class PokemonEntity(models.Model):
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE)
+    pokemon = models.ForeignKey(Pokemon, related_name="entities", on_delete=models.CASCADE)
     lat = models.FloatField(verbose_name='Широта')
     lon = models.FloatField(verbose_name='Долгота')
     appeared_at = models.DateTimeField(blank=True, null=True, verbose_name='Время появления')
@@ -25,4 +24,4 @@ class PokemonEntity(models.Model):
     endurance = models.IntegerField(null=True, blank=True, verbose_name='Выносливость')
 
     def __str__(self):
-        return self.pokemon
+        return self.pokemon.title
